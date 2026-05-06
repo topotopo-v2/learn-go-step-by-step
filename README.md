@@ -1,11 +1,11 @@
-# 🐹 Go Learning Journey (Commit-by-Commit)
+# 🦫 Go Learning Journey (Commit-by-Commit)
 
 This repository documents my journey learning Go by building a simple API step by step.
 Each commit represents a small, intentional improvement — with explanations captured here.
 
 ---
 
-## 📌 Goals
+## 🐈 Goals
 
 * Learn Go fundamentals through hands-on practice
 * Understand backend concepts (HTTP, routing, testing)
@@ -14,7 +14,7 @@ Each commit represents a small, intentional improvement — with explanations ca
 
 ---
 
-## 🧱 Project Overview
+## 🐈 Project Overview
 
 A simple REST API for managing albums:
 
@@ -24,25 +24,83 @@ A simple REST API for managing albums:
 
 ---
 
-## 📚 Learning Log (by Commit)
+## 🐈 Learning Log (by Commit)
 
-### 🟢 Commit — Build Basic Album API with Tests
+### 💙 Commit 02: Add PostgreSQL Integration, Unit Tests, and Clean Project Structure
+
+**Message:** `add postgreSQL integration and update handler, repository and project structure`
+
+**Summary:**
+
+Refactored the Go REST API to introduce PostgreSQL integration, implement unit tests for handler and repository layers,
+and restructure the project into a scalable architecture.
+
+**What I did:**
+
+* Integrated PostgreSQL using `database/sql` and `lib/pq`
+* Added .env support for managing sensitive configuration, currently only used to store database url
+* Created a dedicated database layer (`internal/storage/postgres/connector.go`)
+* Refactored repository to use SQL queries for CRUD operations
+* Implemented repository pattern with interface for testability
+* Updated handler unit tests using Gin + httptest
+* Added repository unit tests using `sqlmock`
+* Introduced mock-based testing with `testify/mock`
+* Restructured project into clean architecture folders:
+    * `cmd/` for application entry point
+    * `internal/` for domain logic (album, router, db)
+* Improved dependency injection (handler → repository → db)
+
+**Key Concepts:**
+
+* **Environment Configuration**
+    * Using .env files for managing sensitive values like DB_URL, separating config from code
+* **Dependency Injection**
+    * Passing repository interfaces into handlers for testability
+* **Repository Pattern**
+    * Separating database logic from business logic
+* **Unit Testing in Go**
+    * Handler testing using `httptest`
+    * Repository testing using `sqlmock`
+* **Mocking**
+    * Using `testify/mock` for simulating dependencies
+    * Using `sqlmock` for simulating database queries
+* **Table-Driven Tests**
+    * Structuring multiple test cases cleanly and scalably
+* **Clean Architecture**
+    * Separation of concerns across layers:
+        * HTTP layer (handler)
+        * Business/data access layer (repository)
+        * Infrastructure layer (DB)
+
+**Project Structure Improvement:**
+
+```text id="structure-final"
+cmd/api                → entry point (main.go)
+internal/album         → handler, repository, model, tests
+internal/router        → route definitions
+internal/storage       → database connection setup
+```
+
+**References:**
+* https://dev.to/unkletayo/setting-up-postgresql-on-macos-a-fresh-start-guide-198j
+
+---
+
+### 💙 Commit 01: Build Basic Album API with Tests
 
 **Message:** `build album API with handlers, tests`
 
 **What I did:**
 
 * Built a simple REST API using Gin:
-  * `GET /albums` → list all albums
-  * `POST /albums` → create a new album
-  * `GET /albums/:id` → get album by ID
+    * `GET /albums` → list all albums
+    * `POST /albums` → create a new album
+    * `GET /albums/:id` → get album by ID
 * Implemented in-memory data storage using a slice
 * Added HTTP handler tests using `httptest`
 * Covered both **success and error scenarios** (e.g. album not found)
 * Used **table-driven tests** for better scalability
 * Improved error handling for invalid JSON requests
-
----
 
 **Key Concepts:**
 
@@ -54,8 +112,8 @@ A simple REST API for managing albums:
 * Test isolation (resetting shared state)
 
 **References:**
+
 - https://go.dev/doc/tutorial/web-service-gin
----
 
 **Notes:**
 
@@ -65,19 +123,15 @@ A simple REST API for managing albums:
 
 ---
 
-**Takeaway:**
-Built a complete, testable API while learning core Go backend concepts, with a focus on simplicity, correctness, and incremental improvement.
-
-
-## 🚀 How to Run
+## 🐈 How to Run
 
 ```bash
-go run main.go
+go run ./cmd/api
 ```
 
 ---
 
-## 🧪 How to Test
+## 🐈 How to Test
 
 ```bash
 go test ./...
@@ -85,21 +139,15 @@ go test ./...
 
 ---
 
-## 📈 Future Improvements
-
-* Add persistence (database)
-* Add middleware (logging, auth)
-* Standardize API responses
-* Improve project structure (handler/service/store)
-
----
-
-## ✍️ Why This Repo Exists
+## 🐈 Why This Repo Exists
 
 This is not just about building an API —
 it’s about **learning in public, step by step**, and documenting the thinking behind each change.
 
 ---
 
-## 📚 Learning Sources
+## 🐈 Learning Sources
+
 - Tutorial: Developing a RESTful API with Go and Gin: https://go.dev/doc/tutorial/web-service-gin
+- Setting Up PostgreSQL on macOS: A Fresh Start
+  Guide: https://dev.to/unkletayo/setting-up-postgresql-on-macos-a-fresh-start-guide-198j
