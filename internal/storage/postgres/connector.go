@@ -2,8 +2,7 @@ package postgres
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -11,16 +10,17 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func NewDb() (*sql.DB, error) {
-	err := godotenv.Load("../../.env") // loads .env
+func NewDb(log *slog.Logger) (*sql.DB, error) {
+	err := godotenv.Load(".env") // loads .env
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Warn("no .env file found, relying on environment variables")
 	}
 
 	dsn := os.Getenv("DB_URL")
 
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
+		log.Error("failed to open database connection", "error", err)
 		return nil, err
 	}
 
@@ -29,9 +29,10 @@ func NewDb() (*sql.DB, error) {
 	db.SetConnMaxLifetime(5 * time.Minute)
 
 	if err := db.Ping(); err != nil {
+		log.Error("failed to ping database", "error", err)
 		return nil, err
 	}
 
-	fmt.Println("✅ Connected to DB")
+	log.Info("Connected to DB")
 	return db, nil
 }

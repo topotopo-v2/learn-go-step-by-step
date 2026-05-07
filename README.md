@@ -26,6 +26,30 @@ A simple REST API for managing albums:
 
 ## 🐈 Learning Log (by Commit)
 
+### 💙 Commit 03: Add Structured Logging and Request Observability
+
+**Message:** `add a logging system with slog and a middlewear-based logging`
+
+**Summary:**
+
+Introduced a logging system with structured JSON logs, middleware-based request logging to improve debugging, and traceability.
+
+**What I did:**
+* Added centralized logger using `slog` with JSON output
+* Replaced `fmt.Println` and `log.Fatal` with structured logging
+* Implemented request logging middleware:
+  * logs method, path, status, latency, client IP
+* Added request ID middleware:
+  * generates unique request ID per request
+  * attaches ID to logs and response headers
+* Injected logger via dependency injection (main → router → middleware → db)
+* Updated database connector to use structured logging instead of standard logging
+
+**Key Concepts:**
+* Structured Logging  - Logging in JSON format for machine-readable and searchable logs
+* Middleware Logging - Automatically logging request lifecycle without manual logging in handlers
+* Request ID / Correlation ID - Tracking a request across layers for debugging and tracing
+
 ### 💙 Commit 02: Add PostgreSQL Integration, Unit Tests, and Clean Project Structure
 
 **Message:** `add postgreSQL integration and update handler, repository and project structure`
@@ -82,6 +106,7 @@ internal/storage       → database connection setup
 ```
 
 **References:**
+
 * https://dev.to/unkletayo/setting-up-postgresql-on-macos-a-fresh-start-guide-198j
 
 ---
