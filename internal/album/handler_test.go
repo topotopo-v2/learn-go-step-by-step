@@ -28,14 +28,14 @@ func setUpRouter(h *Handler) *gin.Engine {
 func TestHandler_GetAlbums(t *testing.T) {
 	tests := []struct {
 		name           string
-		mockSetup      func(m *MockRepository)
+		mockSetup      func(m *MockService)
 		expectedStatus int
 		expectedBody   string
 	}{
 		{
 			name: "Success",
-			mockSetup: func(m *MockRepository) {
-				m.On("GetAll").Return([]Album{
+			mockSetup: func(m *MockService) {
+				m.On("GetAlbums").Return([]Album{
 					{
 						Title:  "Album 1",
 						Artist: "Artist 1",
@@ -49,8 +49,8 @@ func TestHandler_GetAlbums(t *testing.T) {
 		},
 		{
 			name: "InternalServerError",
-			mockSetup: func(m *MockRepository) {
-				m.On("GetAll").Return([]Album{}, errors.New("error")).Once()
+			mockSetup: func(m *MockService) {
+				m.On("GetAlbums").Return([]Album{}, errors.New("error")).Once()
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   `{"error":"failed to fetch albums"}`,
@@ -59,10 +59,10 @@ func TestHandler_GetAlbums(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			mockRepo := new(MockRepository)
-			tc.mockSetup(mockRepo)
+			mockService := new(MockService)
+			tc.mockSetup(mockService)
 
-			handler := NewHandler(mockRepo)
+			handler := NewHandler(mockService)
 			router := setUpRouter(handler)
 
 			req, err := http.NewRequest(http.MethodGet, "/albums", nil)
@@ -73,24 +73,24 @@ func TestHandler_GetAlbums(t *testing.T) {
 
 			assert.Equal(t, tc.expectedStatus, w.Code)
 			assert.JSONEq(t, tc.expectedBody, w.Body.String())
-			mockRepo.AssertExpectations(t)
+			mockService.AssertExpectations(t)
 		})
 	}
 }
 
-func TestHandler_GetAlbumsById(t *testing.T) {
+func TestHandler_GetAlbumById(t *testing.T) {
 	tests := []struct {
 		name           string
 		id             string
-		mockSetup      func(m *MockRepository)
+		mockSetup      func(m *MockService)
 		expectedStatus int
 		expectedBody   string
 	}{
 		{
 			name: "Success",
 			id:   "1",
-			mockSetup: func(m *MockRepository) {
-				m.On("GetByID", int64(1)).Return(&Album{
+			mockSetup: func(m *MockService) {
+				m.On("GetAlbumByID", int64(1)).Return(&Album{
 					Title:  "Album 1",
 					Artist: "Artist 1",
 					Price:  1.0,
@@ -103,15 +103,15 @@ func TestHandler_GetAlbumsById(t *testing.T) {
 		{
 			name:           "Invalid ID",
 			id:             "a",
-			mockSetup:      func(m *MockRepository) {},
+			mockSetup:      func(m *MockService) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid album id"}`,
 		},
 		{
 			name: "Not Found",
 			id:   "2",
-			mockSetup: func(m *MockRepository) {
-				m.On("GetByID", int64(2)).Return(nil, ErrNotFound).Once()
+			mockSetup: func(m *MockService) {
+				m.On("GetAlbumByID", int64(2)).Return(nil, ErrNotFound).Once()
 			},
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   `{"error":"album not found"}`,
@@ -119,8 +119,8 @@ func TestHandler_GetAlbumsById(t *testing.T) {
 		{
 			name: "Internal Server Error",
 			id:   "1",
-			mockSetup: func(m *MockRepository) {
-				m.On("GetByID", int64(1)).Return(nil, errors.New("different error")).Once()
+			mockSetup: func(m *MockService) {
+				m.On("GetAlbumByID", int64(1)).Return(nil, errors.New("different error")).Once()
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   `{"error":"failed to fetch album"}`,
@@ -129,10 +129,10 @@ func TestHandler_GetAlbumsById(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			mockRepo := new(MockRepository)
-			tc.mockSetup(mockRepo)
+			mockService := new(MockService)
+			tc.mockSetup(mockService)
 
-			handler := NewHandler(mockRepo)
+			handler := NewHandler(mockService)
 			router := setUpRouter(handler)
 
 			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/albums/%s", tc.id), nil)
@@ -143,7 +143,7 @@ func TestHandler_GetAlbumsById(t *testing.T) {
 
 			assert.Equal(t, tc.expectedStatus, w.Code)
 			assert.JSONEq(t, tc.expectedBody, w.Body.String())
-			mockRepo.AssertExpectations(t)
+			mockService.AssertExpectations(t)
 		})
 	}
 }
@@ -152,7 +152,7 @@ func TestHandler_CreateAlbums(t *testing.T) {
 	tests := []struct {
 		name           string
 		body           CreateAlbumRequest
-		mockSetup      func(m *MockRepository)
+		mockSetup      func(m *MockService)
 		expectedStatus int
 		expectedBody   string
 	}{
@@ -163,8 +163,8 @@ func TestHandler_CreateAlbums(t *testing.T) {
 				Artist: "Artist 1",
 				Price:  1.0,
 			},
-			mockSetup: func(m *MockRepository) {
-				m.On("Create", mock.Anything).Return(nil).Once()
+			mockSetup: func(m *MockService) {
+				m.On("CreateAlbum", mock.Anything).Return(nil).Once()
 			},
 			expectedStatus: http.StatusCreated,
 			expectedBody:   `{"id":0,"title":"Album 1","artist":"Artist 1","price":1.0}`,
@@ -172,15 +172,15 @@ func TestHandler_CreateAlbums(t *testing.T) {
 		{
 			name:           "BadRequest",
 			body:           CreateAlbumRequest{Title: "Album 1", Artist: "Artist 1"},
-			mockSetup:      func(m *MockRepository) {},
+			mockSetup:      func(m *MockService) {},
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"error":"invalid request body"}`,
 		},
 		{
 			name: "InternalServerError",
 			body: CreateAlbumRequest{Title: "Album 1", Artist: "Artist 1", Price: 1.0},
-			mockSetup: func(m *MockRepository) {
-				m.On("Create", mock.Anything).Return(errors.New("some error")).Once()
+			mockSetup: func(m *MockService) {
+				m.On("CreateAlbum", mock.Anything).Return(errors.New("some error")).Once()
 			},
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   `{"error":"failed to create album"}`,
@@ -189,10 +189,10 @@ func TestHandler_CreateAlbums(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			mockRepo := new(MockRepository)
-			tc.mockSetup(mockRepo)
+			mockService := new(MockService)
+			tc.mockSetup(mockService)
 
-			handler := NewHandler(mockRepo)
+			handler := NewHandler(mockService)
 			router := setUpRouter(handler)
 
 			bodyBytes, _ := json.Marshal(tc.body)
@@ -206,7 +206,7 @@ func TestHandler_CreateAlbums(t *testing.T) {
 
 			assert.Equal(t, tc.expectedStatus, w.Code)
 			assert.JSONEq(t, tc.expectedBody, w.Body.String())
-			mockRepo.AssertExpectations(t)
+			mockService.AssertExpectations(t)
 		})
 	}
 }

@@ -11,7 +11,7 @@ import (
 var ErrNotFound = errors.New("Album not found")
 
 type Handler struct {
-	repo RepositoryI
+	service ServiceI
 }
 
 type CreateAlbumRequest struct {
@@ -24,12 +24,12 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
-func NewHandler(repo RepositoryI) *Handler {
-	return &Handler{repo: repo}
+func NewHandler(service ServiceI) *Handler {
+	return &Handler{service: service}
 }
 
 func (h *Handler) GetAlbums(c *gin.Context) {
-	albums, err := h.repo.GetAll()
+	albums, err := h.service.GetAlbums()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to fetch albums"})
 		return
@@ -53,7 +53,7 @@ func (h *Handler) CreateAlbums(c *gin.Context) {
 		Price:  req.Price,
 	}
 
-	if err := h.repo.Create(album); err != nil {
+	if err := h.service.CreateAlbum(album); err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "failed to create album"})
 		return
 	}
@@ -70,7 +70,7 @@ func (h *Handler) GetAlbumsById(c *gin.Context) {
 		return
 	}
 
-	album, err := h.repo.GetByID(id)
+	album, err := h.service.GetAlbumByID(id)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{

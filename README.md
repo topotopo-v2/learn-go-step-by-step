@@ -21,6 +21,39 @@ A simple REST API for managing albums:
 * `GET /albums` → list all albums
 * `POST /albums` → create a new album
 * `GET /albums/:id` → get album by ID
+---
+Here’s your service layer commit entry in the same format:
+
+---
+
+## 🐈 Learning Log (by Commit)
+
+### 💙 Commit 04: Introduce Service Layer and Business Logic Orchestration
+
+**Message:** `add service layer to separate business logic from handler and repository`
+
+**Summary:**
+
+Refactored the application to include a service layer that handles business logic and orchestration, improving separation of concerns, testability, and scalability of the codebase.
+
+**What I did:**
+
+* Introduced `service.go` to act as an intermediate layer between handler and repository
+* Refactored handler to call service instead of repository directly
+* Injected dependencies via constructor (repository → service → handler)
+* Created `ServiceI` interface for better abstraction and testability
+* Updated unit tests:
+  * handler tests now mock service instead of repository
+  * added service tests with mocked repository using `testify/mock`
+
+**Key Concepts:**
+
+* Service Layer - A layer responsible for handling business logic and coordinating operations between handler and repository
+* Separation of Concerns - Dividing responsibilities across layers (HTTP, business logic, data access)
+* Orchestration - Coordinating multiple steps (validation, checks, DB calls) to complete a business operation
+* Dependency Injection - Passing dependencies through constructors for better modularity and testability
+* Interface Abstraction - Using interfaces (`ServiceI`) to decouple implementation and enable mocking
+* Layered Architecture - Structuring code into handler → service → repository for scalability and maintainability
 
 ---
 

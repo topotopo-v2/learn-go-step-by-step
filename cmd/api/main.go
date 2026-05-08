@@ -3,7 +3,7 @@ package main
 import (
 	"Users/max/Tech/go-boilderplate/internal/album"
 	"Users/max/Tech/go-boilderplate/internal/logger"
-	router2 "Users/max/Tech/go-boilderplate/internal/router"
+	albumrouter "Users/max/Tech/go-boilderplate/internal/router"
 	"Users/max/Tech/go-boilderplate/internal/storage/postgres"
 )
 
@@ -18,10 +18,12 @@ func main() {
 	}
 
 	repo := album.NewRepository(database)
-	handler := album.NewHandler(repo)
-	router := router2.NewRouter(handler, log)
+	service := album.NewService(repo)
+	handler := album.NewHandler(service)
+	router := albumrouter.NewRouter(handler, log)
 
 	log.Info("starting server", "port", "8080")
+
 	// Start a new server
 	if err := router.Run(":8080"); err != nil {
 		log.Error("server failed", "error", err)
